@@ -138,14 +138,15 @@ conMalist_rel
 
 
 # Choosing threshold for further analysis ----------------
-# Choosing a threshold for specific goal, e.g.: finding 50% of 
+# Choosing a threshold for specific goal, e.g.: finding 50% of positives aspects with p_choosen 0.0585
 p_choosen <- 0.0585
 
 # Print full confusion matrix
 
-confusionMatrix(ifelse(prob[,"Turnover"]>p_choosen, "Turnover", "No_Turnover") %>% factor(),
+conMa_p_choosen <- confusionMatrix(ifelse(prob[,"Turnover"]>p_choosen, "Turnover", "No_Turnover") %>% factor(),
                 test$Turnover, 
                 positive="Turnover")
+conMa_p_choosen
 
 # Checking conMa over time (per month i)
 conMalist_month <- list()

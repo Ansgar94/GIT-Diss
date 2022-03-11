@@ -56,88 +56,130 @@ plot(interact)
 #ale <- FeatureEffect$new(IML_Predictor, feature="Length_of_service_in_month") 
 #ale$plot()
 
+# Matrix of all Feature Effects using Partial Dependence Plot
+#PDP_ICE_plot <- FeatureEffects$new(IML_Predictor,method = 'pdp+ice' )
+#plot(PDP_ICE_plot)
+
 
 # Matrix of all Feature Effects using ALE
-effs <- FeatureEffects$new(IML_Predictor)
-plot(effs)
+ALE_plot <- FeatureEffects$new(IML_Predictor)
+plot(ALE_plot)
 
 
 # Individual ALE plot for interesting features varying with number of intervals
 
 # ALE Gender
-ALEPlot(df_xai_X,
-        model_win, J=1, K=5, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+if (which(names(df_xai_X)=="Gender") %>% is.count() ) {
+  ALEPlot(df_xai_X,
+          model_win, J=which(names(df_xai_X)=="Gender"), K=10, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+}
 
 # ALE Age
-ALEPlot(df_xai_X,
-        model_win, J=2, K=100, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+if (which(names(df_xai_X)=="Age") %>% is.count() ) {
+  ALEPlot(df_xai_X,
+          model_win, J=which(names(df_xai_X)=="Age"), K=20, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+}
+
 
 # ALE Net_working_days
 ALEPlot(df_xai_X,
-        model_win, J=7, K=10, 
+        model_win, J=which(names(df_xai_X)=="Net_working_days"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Sick_days
 ALEPlot(df_xai_X,
-        model_win, J=8, K=10, 
+        model_win, J=which(names(df_xai_X)=="Sick_days"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Salary_today
-ALEPlot(df_xai_X,
-        model_win, J=9, K=25, 
+ALEPlot(df_xai_X %>% filter(between(Salary_today,1000,6000)),
+        model_win, J=which(names(df_xai_X)=="Salary_today"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Rel_salary_increase_1_years --> not robust!
-ALEPlot(df_xai_X,
-        model_win, J=10, K=3, 
+ALEPlot(df_xai_X %>% filter(between(Rel_salary_increase_1_years,-0.1,0.3)),
+        model_win, J=which(names(df_xai_X)=="Rel_salary_increase_1_years"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
-# ALE Lenght_of_service_in_month
+# ALE Length_of_service_in_month
+if (which(names(df_xai_X)=="Length_of_service_in_month") %>% is.count() ) {
 ALEPlot(df_xai_X,
-        model_win, J=11, K=10, 
+        model_win, J=which(names(df_xai_X)=="Length_of_service_in_month"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+}
 
 # ALE Number_of_children
 ALEPlot(df_xai_X,
-        model_win, J=12, K=100, 
+        model_win, J=which(names(df_xai_X)=="Number_of_children"), K=50, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Age_youngest_children
+if (which(names(df_xai_X)=="Age_youngest_children") %>% is.count() ) {
 ALEPlot(df_xai_X,
-        model_win, J=13, K=100, 
+        model_win, J=which(names(df_xai_X)=="Age_youngest_children"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+}
 
 # ALE Covid_Stringency_Index
 ALEPlot(df_xai_X,
-        model_win, J=16, K=2, 
+        model_win, J=which(names(df_xai_X)=="Covid_Strigency_Index"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Covid_Cases_ger
-#ALEPlot(df_xai_X,
-#        model_win, J=17, K=10, 
-#        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="Covid_Cases_ger"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Covid_Google_Trens
-#ALEPlot(df_xai_X,
-#        model_win, J=18, K=10, 
-#        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="Covid_Google_Trends"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+# ALE Unemployment_rate_ger
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="Unemployment_rate_ger"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Home_workplace_distance
-#ALEPlot(df_xai_X,
-#        model_win, J=20, K=2, 
-#        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+ALEPlot(df_xai_X %>% filter(between(Home_workplace_distance,0,100)),
+        model_win, J=which(names(df_xai_X)=="Home_workplace_distance"), K=5, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+# ALE Early_retirement_rate
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="Early_retirement_rate"), K=20, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+# ALE Degree_of_employment
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="Degree_of_employment"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+# ALE Gross_working_days
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="Gross_working_days"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+# ALE Holiday_days
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="Holiday_days"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+# ALE Covid_Google_Trends
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="Covid_Google_Trends"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+
+
 
 # Second order ALE/PDP Interaction
 
-ALEPlot(df_xai_X,
-        model_win, J=c(12,11), K=20, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+#ALEPlot(df_xai_X,
+#        model_win, J=c(12,11), K=20, 
+#        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
-PDPlot(df_xai_X,
-        model_win, J=c(12,11), K=20, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # Surrogate model
 #We take the predictions of the black box model (in our case the random forest) and train a decision tree on the original features and 
@@ -162,7 +204,7 @@ PDPlot(df_xai_X,
 lime.explain <- list()
 
 for (i in 1:10){
-  lime.explain[[i]] <- LocalModel$new(IML_Predictor, k=20, x.interest = df_xai[i,])
+  lime.explain[[i]] <- LocalModel$new(IML_Predictor, k=ncol(df_xai)-2, x.interest = df_xai[i,])
 }
 
 lime.explain[[10]]$plot()
@@ -177,17 +219,17 @@ lime.explain[[10]]$results
 SHAPley.explain <- list()
 SHAPley.plot <- list()
 
-for (i in 1:100){
+for (i in 1:200){
   #calculate SHAP values
   SHAPley.explain[[i]] <- Shapley$new(IML_Predictor, 
                                       x.interest = df_xai %>% 
                                         .[,which(!names(df_xai) %in% c("Turnover","Monat","Turnover_prob"))] %>% 
                                         .[i,], 
-                                      sample.size=100) #50,200
+                                      sample.size=25) #50,200
   
   #create plot SHAP values
   SHAPley.plot[[i]]<- SHAPley.explain[[i]]$results %>%
-    top_n(8, wt = abs(phi)) %>%
+    top_n(10, wt = abs(phi)) %>%
     ggplot(aes(phi, reorder(feature.value, phi, color = phi > 0))) +
     geom_bar(stat="identity") + 
     theme_classic() + 
@@ -197,38 +239,38 @@ for (i in 1:100){
                   toString(round(df_xai[i, "Turnover_prob"],2)), 
                   "|Prob(SHAP):", 
                   SHAPley.explain[[i]]$results %>%
-                    top_n(8, wt = abs(phi)) %>%
+                    top_n(10, wt = abs(phi)) %>%
                     .$"phi" %>% 
                     sum() %>% 
-                    round(.,digits=2)
+                    round(.,digits=3)
                   
     ))
 }
 
 
 # portray examples in a grid
-xai_plot <- do.call("grid.arrange",c( SHAPley.plot[50],
-                        SHAPley.plot[91],
-                        SHAPley.plot[93],
-                        SHAPley.plot[99]))
-xai_plot
+xai_plot <- do.call("grid.arrange",c( 
+                        SHAPley.plot[63], # Long commute, part time worker with young child
+                        SHAPley.plot[76], # Full sick_days as early indicator for older employees
+                        SHAPley.plot[107], # Established Manager with high Sick_Days
+                        SHAPley.plot[116])) # Newly hired Manager with young children
 
 # Print results in console
 SHAPley.explain[[1]]$results
 
 # find relevant examples
 xai_examples <-list()
-for (i in 1:100){ 
+for (i in 1:200){ 
   #calculate SHAP values
   ifelse (
-  'Number_of_children=0' %in% SHAPley.explain[[i]]$results$feature.value 
+  'Number_of_children=0' %in% SHAPley.explain[[i]]$results$feature.value
   & !('Children_under_18=0' %in% SHAPley.explain[[i]]$results$feature.value)
   | ('Home_workplace_distance=14' %in% SHAPley.explain[[i]]$results$feature.value),
   xai_examples [[i]] <- "bad",
   xai_examples [[i]] <- "good")
 }
 
-xai_examples[1:100]
+xai_examples[1:200]
 
 
 # SHAP using fastshap package
@@ -252,18 +294,16 @@ autoplot(fastshap,type="contribution",row_num=50,X=df_xai_X)
 
 # Using Anchors and other XAI methods, https://github.com/viadee/anchorsOnR 
 
-predict_model(model_win, test,type="prob")
-
 #model_type("classification")
 
 #Create Anchor explainer for test data
-anchor_explainer <- anchors(df_xai, model_win)
-?anchors()
+#anchor_explainer <- anchors(df_xai, model_win)
+#?anchors()
 
 #Use Anchor explainer on XAI_examples
 
-anchor_explanations <- explain(df_xai[5,],anchor_explainer, labels="Turnover")
-anchor_explanations
+#anchor_explanations <- explain(df_xai[5,],anchor_explainer, labels="Turnover")
+#anchor_explanations
 #printExplanations(anchor_explainer, anchor_explanations)
 
 # TO-DO

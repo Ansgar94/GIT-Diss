@@ -169,12 +169,23 @@ df[,c('Home_workplace_distance',
                                         'Age_youngest_children',
                                         'Degree_of_employment' )] %>%  round()
 
-# exclude variables that violate discrimination criteria (age, gender)
-df_protected <- df
-df[,c('Age','Gender')] <- NULL
 
-# exclude variables that corralte with adverse impact predictor "age" (young vs. old)
-df[,c('Length_of_service_in_month','Age_youngest_children')] <- NULL
+# exclude protected class attributes that cause adverse impact, based on chosen model type  ------------
+# safe all data in df_procteded to analyze adverse impact after model training and evaluation
+df_protected <- df
+
+# for operational model: exclude procted class variables violate discrimination rules (age, gender)
+if(adverse_impact_model_type=="operational"){
+  df[,c('Age','Gender')] <- NULL
+  
+}
+
+# for revised model: exclude variables that correlate with adverse impact predictor "age" (young vs. old)
+if(adverse_impact_model_type=="revised"){
+  df[,c('Age','Gender')] <- NULL
+  df[,c('Age_youngest_children')] <- NULL #,'Length_of_service_in_month'
+}
+
 
 # Splitting data in training and test data, using the last 6 month as test data -----
 
