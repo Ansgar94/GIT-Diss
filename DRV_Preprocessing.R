@@ -85,89 +85,89 @@ summary(df)
 # Rename columns to English
 df <- df %>% 
   dplyr::rename(
-    Gender=Geschlecht,
-    Age=Alter,
-    Early_retirement_rate=Var4,
-    Degree_of_employment=Beschaeftigungsgrad,
-    Salary_today=Gehalt.heute,
-    Rel_salary_increase_1_years=Diff.Gehalt.1.Jahre.rel,
-    Gross_working_days=Soll.AT,
-    Sick_days=Var1,
-    Length_of_service_in_month=Betriebszugehoerigkeit.in.Monaten,
-    Number_of_children=Anzahl.Kinder,
-    Age_youngest_children=Alter.des.juengsten.Kinds,
-    Net_working_days=Var8,
-    Children_under_18=Kind.U18,
-    Holiday_days=Urlaubstage,
+    A1_Gender=Geschlecht,
+    A2_Age=Alter,
+    B3_Early_retirement_rate = Var4,
+    B5_Degree_of_employment = Beschaeftigungsgrad,
+    B11_Salary_today_EUR=Gehalt.heute,
+    B9_Salary_increase_last_year=Diff.Gehalt.1.Jahre.rel,
+    B6_Gross_working_days=Soll.AT,
+    B4_Sickness_days=Var1,
+    B10_Tenure_in_month=Betriebszugehoerigkeit.in.Monaten,
+    A3_Number_of_children=Anzahl.Kinder,
+    A5_Age_youngest_children=Alter.des.juengsten.Kinds,
+    B8_Net_working_days=Var8,
+    A4_Children_under_18_years=Kind.U18,
+    B7_Vacation_days=Urlaubstage,
     Turnover=NaK_6,
-    Civil_servant_status_ger=Verbeamtung,
-    Covid_Strigency_Index=Covid.Strigency.Index,
-    Covid_Cases_ger=Covid.Cases,
-    Covid_Google_Trends=Trends.Covid.Google,
-    Unemployment_rate_ger=Arbeitslosenquote.DE,
-    Home_workplace_distance=Distanz
+    B2_Public_service_status_GER=Verbeamtung,
+    E1_Covid_strigency_index_GER=Covid.Strigency.Index,
+    E2_Covid_cases_GER=Covid.Cases,
+    E3_Covid_Google_trends_GER=Trends.Covid.Google,
+    D1_Unemployment_rate_GER=Arbeitslosenquote.DE,
+    B1_Commute_distance_in_km=Distanz
 )
 
 # Reorder columns 
 df <- df[,c(    'Monat',
-                'Gender',
-                'Age',
-                'Degree_of_employment',
-                'Gross_working_days',
-                'Early_retirement_rate',
-                'Holiday_days',
-                'Net_working_days',
-                'Sick_days',
-                'Salary_today',
-                'Rel_salary_increase_1_years',
-                'Length_of_service_in_month',
-                'Number_of_children',
-                'Age_youngest_children',
-                'Children_under_18',
-                'Civil_servant_status_ger',
-                'Covid_Strigency_Index',
-                'Covid_Cases_ger',
-                'Covid_Google_Trends',
-                'Unemployment_rate_ger',
-                'Home_workplace_distance',
+                'A1_Gender',
+                'A2_Age',
+                'A3_Number_of_children',
+                'A4_Children_under_18_years',
+                'A5_Age_youngest_children',
+                'B1_Commute_distance_in_km',
+                'B2_Public_service_status_GER',
+                'B3_Early_retirement_rate',
+                'B4_Sickness_days',
+                'B5_Degree_of_employment',
+                'B6_Gross_working_days',
+                'B7_Vacation_days',
+                'B8_Net_working_days',
+                'B9_Salary_increase_last_year',
+                'B10_Tenure_in_month',
+                'B11_Salary_today_EUR',
+                'E1_Covid_strigency_index_GER',
+                'E2_Covid_cases_GER',
+                'E3_Covid_Google_trends_GER',
+                'D1_Unemployment_rate_GER',
                 'Turnover')]
 
 
 # Imputation and data split in training and test data sets, save data to csv ----------
 
 # Chosse nominal values for Imputation
-nominal_values=c('Age',
-                 'Degree_of_employment',
-                 'Gross_working_days',
-                 'Early_retirement_rate',
-                 'Holiday_days',
-                 'Net_working_days',
-                 'Sick_days',
-                 'Salary_today',
-                 'Rel_salary_increase_1_years',
-                 'Length_of_service_in_month',
-                 'Number_of_children',
-                 'Age_youngest_children',
-                 'Covid_Strigency_Index',
-                 'Covid_Cases_ger',
-                 'Covid_Google_Trends',
-                 'Unemployment_rate_ger',
-                 'Home_workplace_distance')
+nominal_values=c('A2_Age',
+                 'A3_Number_of_children',
+                 'A5_Age_youngest_children',
+                 'B1_Commute_distance_in_km',
+                 'B3_Early_retirement_rate',
+                 'B4_Sickness_days',
+                 'B5_Degree_of_employment',
+                 'B6_Gross_working_days',
+                 'B7_Vacation_days',
+                 'B8_Net_working_days',
+                 'B9_Salary_increase_last_year',
+                 'B10_Tenure_in_month',
+                 'B11_Salary_today_EUR',
+                 'E1_Covid_strigency_index_GER',
+                 'E2_Covid_cases_GER',
+                 'E3_Covid_Google_trends_GER',
+                 'D1_Unemployment_rate_GER')
 
 # Impute missing values with bagImpute
 df[,nominal_values] <- preProcess(df[,nominal_values], method = "bagImpute") %>% 
   predict(., df[,nominal_values]) 
 
 # Round relevant integer values
-df[,c('Home_workplace_distance',
-      'Salary_today',
-      'Length_of_service_in_month',
-      'Age_youngest_children',
-      'Degree_of_employment')] <- df[,c('Home_workplace_distance',
-                                        'Salary_today',
-                                        'Length_of_service_in_month',
-                                        'Age_youngest_children',
-                                        'Degree_of_employment' )] %>%  round()
+df[,c('B1_Commute_distance_in_km',
+      'B11_Salary_today_EUR',
+      'B10_Tenure_in_month',
+      'A5_Age_youngest_children',
+      'B5_Degree_of_employment')] <- df[,c('B1_Commute_distance_in_km',
+                                        'B11_Salary_today_EUR',
+                                        'B10_Tenure_in_month',
+                                        'A5_Age_youngest_children',
+                                        'B5_Degree_of_employment' )] %>%  round()
 
 
 # exclude protected class attributes that cause adverse impact, based on chosen model type  ------------
@@ -176,14 +176,14 @@ df_protected <- df
 
 # for operational model: exclude procted class variables violate discrimination rules (age, gender)
 if(adverse_impact_model_type=="operational"){
-  df[,c('Age','Gender')] <- NULL
+  df[,c('A2_Age','A1_Gender')] <- NULL
   
 }
 
 # for revised model: exclude variables that correlate with adverse impact predictor "age" (young vs. old)
 if(adverse_impact_model_type=="revised"){
-  df[,c('Age','Gender')] <- NULL
-  df[,c('Age_youngest_children')] <- NULL #,'Length_of_service_in_month'
+  df[,c('A2_Age','A1_Gender')] <- NULL
+  df[,c('A5_Age_youngest_children')] <- NULL #,'Length_of_service_in_month'
 }
 
 
@@ -200,7 +200,7 @@ test_protected <- subset(df_protected, Monat >= as.POSIXct('2020-07-01'))
 #print out summary statistics
 summary(df)
 psych::describe(df)
-sumtable(df) #, out="csv",file=stringr::str_c(getwd(),'/Data/DRV_POC_Employees_R_sumtable.csv')
+sumtable(df) #, out="csv",file=stringr::str_c(getwd(),'/Data/DRV_POC_Employees_R_sumtable.csv'))
 
 # save data to external csv files ------
 write.csv(df, stringr::str_c(getwd(),'/Data/DRV_POC_Employees_R.csv'))

@@ -29,6 +29,7 @@ glm_fit_scaled <- df %>%
 summary(glm_fit_scaled)
 
 
+
 #table(predict(glm_fit,newdata=test),test$Turnover)
 #zvalues_combined = summary(glm_fit$coefficients[,4])  %>% sort()
 #zvalues_combined

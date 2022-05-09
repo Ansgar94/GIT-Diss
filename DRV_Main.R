@@ -6,9 +6,9 @@
 # exclude prodected class attributes  that violate discrimination criteria (age, gender)
 # should protected groups be included? Should correlated features with protected group attributes be included?
 # Options: "full", "operational", "revised"
-adverse_impact_model_type <- "full"
+adverse_impact_model_type <- "operational"
 
-# choose grid_type full to perform a complete training process including a wieder range of hyperparameters
+# choose grid_type full to perform a complete training process including a wider range of hyper parameters
 # This option could lead to way higher time consuming 
 # grid_type <- "full"
 
@@ -78,6 +78,6 @@ source("DRV_Model_Training.R", echo=T)
 
 source("DRV_Analysis.R", echo=T)
 
-#source("DRV_XAI.R", echo=T)
+source("DRV_XAI.R", echo=T)
 
 source("DRV_Adverse_Impact.R", echo=T)

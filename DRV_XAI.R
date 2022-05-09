@@ -69,108 +69,150 @@ plot(ALE_plot)
 # Individual ALE plot for interesting features varying with number of intervals
 
 # ALE Gender
-if (which(names(df_xai_X)=="Gender") %>% is.count() ) {
+if (!which(names(df_xai_X)=="A1_Gender") %>% is_empty() ) {
   ALEPlot(df_xai_X,
-          model_win, J=which(names(df_xai_X)=="Gender"), K=10, 
+          model_win, J=which(names(df_xai_X)=="A1_Gender"), K=10, 
           pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 }
 
-# ALE Age
-if (which(names(df_xai_X)=="Age") %>% is.count() ) {
-  ALEPlot(df_xai_X,
-          model_win, J=which(names(df_xai_X)=="Age"), K=20, 
-          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-}
 
+# Create Layout for continuous variables
+par(mfrow=c(3,3),yaxt="s",ann=F,mar = c(3, 3, 2 ,1) )
+
+# ALE Commute_distance_in_km
+ALEPlot(df_xai_X %>% filter(between(B1_Commute_distance_in_km,0,100)),
+        model_win, J=which(names(df_xai_X)=="B1_Commute_distance_in_km"), K=4, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B1_Commute_distance_in_km",ylab=NULL)
 
 # ALE Net_working_days
 ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Net_working_days"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B8_Net_working_days"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B8_Net_working_days",ylab=NULL)
+
+# ALE Salary_today_in_EUR
+ALEPlot(df_xai_X %>% filter(between(B11_Salary_today_EUR,1000,6000)),
+        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B11_Salary_today_EUR",ylab=NULL)
+
+
+# ALE Tenure_in_month
+if (!which(names(df_xai_X)=="B10_Tenure_in_month") %>% is_empty() ) {
+  ALEPlot(df_xai_X,
+          model_win, J=which(names(df_xai_X)=="B10_Tenure_in_month"), K=10, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  abline(h=0,col="lightgray",)
+  title("B10_Tenure_in_month",ylab=NULL)
+}
+
+# ALE Salary_increase_last_year --> not robust!
+ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,-0.1,0.2)),
+        model_win, J=which(names(df_xai_X)=="B9_Salary_increase_last_year"), K=20, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B9_Salary_increase_last_year",ylab=NULL)
 
 # ALE Sick_days
 ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Sick_days"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=20, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B4_Sickness_days",ylab=NULL)
 
-# ALE Salary_today
-ALEPlot(df_xai_X %>% filter(between(Salary_today,1000,6000)),
-        model_win, J=which(names(df_xai_X)=="Salary_today"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
-# ALE Rel_salary_increase_1_years --> not robust!
-ALEPlot(df_xai_X %>% filter(between(Rel_salary_increase_1_years,-0.1,0.3)),
-        model_win, J=which(names(df_xai_X)=="Rel_salary_increase_1_years"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Length_of_service_in_month
-if (which(names(df_xai_X)=="Length_of_service_in_month") %>% is.count() ) {
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Length_of_service_in_month"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+# ALE Age
+if (!which(names(df_xai_X)=="A2_Age") %>% is_empty() ) {
+  ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,20,65),
+          model_win, J=which(names(df_xai_X)=="A2_Age"), K=10, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  abline(h=0,col="lightgray",)
+  title("A2_Age",ylab=NULL)
 }
+
 
 # ALE Number_of_children
 ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Number_of_children"), K=50, 
+        model_win, J=which(names(df_xai_X)=="A3_Number_of_children"), K=50, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("A3_Number_of_children",ylab=NULL)
 
-# ALE Age_youngest_children
-if (which(names(df_xai_X)=="Age_youngest_children") %>% is.count() ) {
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Age_youngest_children"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-}
-
-# ALE Covid_Stringency_Index
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Covid_Strigency_Index"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Covid_Cases_ger
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Covid_Cases_ger"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Covid_Google_Trens
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Covid_Google_Trends"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Unemployment_rate_ger
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="Unemployment_rate_ger"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Home_workplace_distance
-ALEPlot(df_xai_X %>% filter(between(Home_workplace_distance,0,100)),
-        model_win, J=which(names(df_xai_X)=="Home_workplace_distance"), K=5, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Early_retirement_rate
-ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="Early_retirement_rate"), K=20, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
 # ALE Degree_of_employment
 ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="Degree_of_employment"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B5_Degree_of_employment",ylab=NULL)
+
+# ALE Early_retirement_rate
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="B3_Early_retirement_rate"), K=20, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B3_Early_retirement_rate",ylab=NULL)
+
+# ALE Vacation_days
+ALEPlot(df_xai_X ,
+        model_win, J=which(names(df_xai_X)=="B7_Vacation_days"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B7_Vacation_days",ylab=NULL)
+
+
+# ALE Unemployment_rate_ger
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="D1_Unemployment_rate_GER"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("D1_Unemployment_rate_GER",ylab=NULL)
+
+
+# ALE Age_youngest_children
+if (!which(names(df_xai_X)=="A5_Age_youngest_children") %>% is_empty() ) {
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="A5_Age_youngest_children"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  abline(h=0,col="lightgray",)
+  title("A5_Age_youngest_children",ylab=NULL)
+}
+
 
 # ALE Gross_working_days
 ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="Gross_working_days"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B6_Gross_working_days"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-
-# ALE Holiday_days
-ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="Holiday_days"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B6_Gross_working_days",ylab=NULL)
 
 # ALE Covid_Google_Trends
-ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="Covid_Google_Trends"), K=10, 
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="E3_Covid_Google_trends_GER"), K=10, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("E3_Covid_Google_trends_GER",ylab=NULL)
+
+# ALE Covid_Cases_ger
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="E2_Covid_cases_GER"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("E2_Covid_cases_GER",ylab=NULL)
+
+# ALE Covid_Stringency_Index
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="E1_Covid_strigency_index_GER"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("E1_Covid_strigency_index_GER",ylab=NULL)
+
+
+
 
 
 
@@ -250,10 +292,17 @@ for (i in 1:200){
 
 # portray examples in a grid
 xai_plot <- do.call("grid.arrange",c( 
-                        SHAPley.plot[63], # Long commute, part time worker with young child
-                        SHAPley.plot[76], # Full sick_days as early indicator for older employees
-                        SHAPley.plot[107], # Established Manager with high Sick_Days
-                        SHAPley.plot[116])) # Newly hired Manager with young children
+                        SHAPley.plot[62], #sick      # 63 Long commute, part time worker with young child
+                        SHAPley.plot[107], #old      #  76 Full sick_days as early indicator for older employees, but not as strong in management area
+                        SHAPley.plot[115], #mother   #  107 Established Manager with high Sick_Days
+                        SHAPley.plot[117])) #new manager   # 116 Newly hired Manager with young children
+
+
+xai_plot_test <- do.call("grid.arrange",c( 
+  SHAPley.plot[175], # Long commute, part time worker with young child
+  SHAPley.plot[177], # Full sick_days as early indicator for older employees
+  SHAPley.plot[187], # Established Manager with high Sick_Days
+  SHAPley.plot[190]))
 
 # Print results in console
 SHAPley.explain[[1]]$results
@@ -263,9 +312,9 @@ xai_examples <-list()
 for (i in 1:200){ 
   #calculate SHAP values
   ifelse (
-  'Number_of_children=0' %in% SHAPley.explain[[i]]$results$feature.value
-  & !('Children_under_18=0' %in% SHAPley.explain[[i]]$results$feature.value)
-  | ('Home_workplace_distance=14' %in% SHAPley.explain[[i]]$results$feature.value),
+  'A3_Number_of_children=0' %in% SHAPley.explain[[i]]$results$feature.value
+  & !('A4_Children_under_18_years=0' %in% SHAPley.explain[[i]]$results$feature.value)
+  | ('B1_Commute_distance_in_km=14' %in% SHAPley.explain[[i]]$results$feature.value),
   xai_examples [[i]] <- "bad",
   xai_examples [[i]] <- "good")
 }
@@ -275,16 +324,25 @@ xai_examples[1:200]
 
 # SHAP using fastshap package
 
-fastshap <- fastshap::explain(model_win, 
-                              X=df_xai_X,
-                              pred_wrapper=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+#fastshap <- fastshap::explain(model_win, 
+#                              X=df_xai_X,
+#                              pred_wrapper=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 
-autoplot(fastshap)
-autoplot(fastshap,type="dependence",feature="Home_workplace_distance",X=df_xai_X) 
-autoplot(fastshap,type="contribution",row_num=50,X=df_xai_X) 
+#autoplot(fastshap)
+#autoplot(fastshap,type="dependence",feature="Home_workplace_distance",X=df_xai_X) 
+#autoplot(fastshap,type="contribution",row_num=50,X=df_xai_X) 
 
 
 #possible with external factors: 91
+
+# Classification Based on Association Rules Algorithm 
+#library(arulesCBA)
+#library(arules)
+#library(arulesViz)
+
+#CBA_model <- CBA(Turnover~.,df_xai[,which(!names(df_xai) %in% c("Monat","Turnover_prob"))])
+
+#inspectDT(CBA_model$rules)
 
 # TO-DO: Using the other packages without IML Framework (Treeshap, Anchors...) ----------
 # Treeshap as optimized version for treea algorithms (Random Forest, XGBoost, etc.): https://github.com/ModelOriented/treeshap

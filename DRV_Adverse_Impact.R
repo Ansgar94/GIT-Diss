@@ -8,21 +8,21 @@ df_adverse_impact <- test_protected[,which(!names(test_protected) %in% c("Monat"
 # Choosing threshold for Adverse Impact analysis
 p_adverse_impact <- 0.0585
 df_adverse_impact$Turnover_pred <- ifelse(df_adverse_impact[,"Turnover_prob"]>p_adverse_impact, "Turnover", "No_Turnover") %>% factor()
-df_adverse_impact$grouped_age <- ifelse(df_adverse_impact[,"Age"]>median(df_adverse_impact[,"Age"]), "old", "young") %>% factor()
+df_adverse_impact$grouped_age <- ifelse(df_adverse_impact[,"A2_Age"]>median(df_adverse_impact[,"A2_Age"]), "old", "young") %>% factor()
 summary(df_adverse_impact)
 
-# Show overall consfusion matrix
+# Show overall confusion matrix
 confusionMatrix(df_adverse_impact$Turnover_pred,
                    df_adverse_impact$Turnover, 
                    positive="Turnover")$table/nrow(df_adverse_impact)*100 %>% round(.,4)
 
 
 # Aggregating according to gender for adverse impact analysis (4/5 rule)
-merge(dplyr::count(df_adverse_impact, Gender, Turnover), 
-      dplyr::count(df_adverse_impact, Gender, Turnover_pred), 
+merge(dplyr::count(df_adverse_impact, A1_Gender, Turnover), 
+      dplyr::count(df_adverse_impact, A1_Gender, Turnover_pred), 
       by.x=0, by.y = 0, all=F) %>%  
-  .[,c("Gender.x","Turnover", "n.x", "n.y")] %>% 
-  dplyr::rename(Gender=Gender.x, Turnover_n = n.x, Turnover_pred = n.y) 
+  .[,c("A1_Gender.x","Turnover", "n.x", "n.y")] %>% 
+  dplyr::rename(Gender=A1_Gender.x, Turnover_n = n.x, Turnover_pred = n.y) 
 
 
 # Aggregating according to grouped_age for adverse impact analysis (4/5 rule)
@@ -35,7 +35,7 @@ merge(dplyr::count(df_adverse_impact, grouped_age, Turnover),
 
 
 # Adverse Impact Analysis Gender ---------
-df_gender <- dplyr::count(df_adverse_impact, Gender, Turnover_pred)[3:6,]
+df_gender <- dplyr::count(df_adverse_impact, A1_Gender, Turnover_pred)[3:6,]
 rownames(df_gender) <- 1:4
 df_gender 
 
@@ -131,12 +131,25 @@ pnorm(abs(Z_ir_age), lower.tail=F)
 # p-values are under the conventional alpha of .05, and thus indicate that we confirm the null hypothesis 
 # that there is zero relative difference between the population selection ratios for men and women.
 
-# calculate conficende intervall
+# calculate confidence interval
 Ratio_age_SE <- sqrt(((1 - Ratio_young)/(T_young)+(1-Ratio_old)/(T_old)))
 exp(log(Ratio_age)+1.96*Ratio_age_SE)
 exp(log(Ratio_age)-1.96*Ratio_age_SE)
 
 
+
+# Civil_servant_status analysis analysis: Turnover is higher vor civil_servants
+df_civil_servant <- dplyr::count(df_adverse_impact, B2_Public_service_status_GER, Turnover)
+df_civil_servant
+df_civil_servant[2,3]/df_civil_servant[1,3] 
+df_civil_servant[4,3]/df_civil_servant[3,3] 
+
+# Check for correlation with other variables
+glm_civil_servant_status <- glm(B2_Public_service_status_GER ~., data = df, family=binomial)
+summary(glm_civil_servant_status)
+
+
 # Safe Image with name of model_type
-paste("~/",adverse_impact_model_type,"_Model_24_02.RData",sep="") %>%  save.image()
+#paste("~/",adverse_impact_model_type,"_Model_24_02.RData",sep="") %>%  save.image()
+
 

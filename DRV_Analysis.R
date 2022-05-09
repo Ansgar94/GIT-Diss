@@ -141,6 +141,14 @@ conMalist_rel
 # Choosing a threshold for specific goal, e.g.: finding 50% of positives aspects with p_choosen 0.0585
 p_choosen <- 0.0585
 
+
+confusionMatrix(ifelse(prob[,"Turnover"]>p_choosen, "Turnover", "No_Turnover") %>% factor(),
+                test$Turnover, 
+                positive="Turnover")$table/nrow(test)*100 %>% round(.,4)
+
+confusionMatrix(ifelse(prob[,"Turnover"]>p_choosen, "Turnover", "No_Turnover") %>% factor(),
+                test$Turnover, 
+                positive="Turnover")$table/6 %>% round(.,0)
 # Print full confusion matrix
 
 conMa_p_choosen <- confusionMatrix(ifelse(prob[,"Turnover"]>p_choosen, "Turnover", "No_Turnover") %>% factor(),
