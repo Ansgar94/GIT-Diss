@@ -2,7 +2,7 @@
 
 # Read data from local file
 df <- read.table(stringr::str_c(getwd(),'/Data/DRV_POC_Employees_pre.csv'), sep=';', header=T, dec=',', stringsAsFactors=T, comment.char = "", fill=T, encoding='UTF-8')
-
+summary(df)
 # Adjust variable types
 df[,c('Kind.U18','X1.Jahr.im.Betrieb')] <- lapply(df[,c('Kind.U18','X1.Jahr.im.Betrieb')],as.factor) 
 df$Abt <- as.factor(as.character(df$Abt))
@@ -30,20 +30,20 @@ df$Monat <- as.POSIXct(strptime(df$Monat, format='%Y-%m-%d'))
 
 
 # Delete columns Monat to avoid it beeing used as factor in analysis
-df[,c(      'MaÃŸnahmenart',
-            'MaÃŸnahmengrund',
+df[,c(      'Abt',
+            'Maßnahmenart',
+            'Maßnahmengrund',
             'Mitarbeiterkreis',
             'FAKE_ID','X.U.FEFF.',
-            'Beginn.der.MaÃŸnahme',
-            'Monate.bis.MaÃŸnahme',
+            'Beginn.der.Maßnahme',
+            'Monate.bis.Maßnahme',
             'NaK',
             'NaK_1',
             'NaK_3',
             'NaK_12')] <- NULL
 
-# Exclude non-critical attributes, excluded from SAP Analytics Cloud project
-df[,c(      'Abt',
-            'Stelle',
+# Exclude non-relevant attributes, according to PoC in SAP Analytics Cloud (automated machine learning)
+df[,c(      'Stelle',
             'Tarifgruppe',
             'Tarifstufe',
             'Tarifgruppe.vor.einem.Jahr',
@@ -57,23 +57,13 @@ df[,c(      'Abt',
             'Diff.Gehalt.1.Jahre.abs',
             'Diff.Gehalt.5.Jahre.abs',
             'Sabbaticaltage',
-            'Bildungsniveau',
-            'Mutterschutztage',
-            'indiv.Arbeitszeit')] <- NULL
-
-# Exclude non-significant attributes
-df[,c('Bildungsniveau',
+            'indiv.Arbeitszeit',
             'Var5',
             'Var6',
-            'Kurzarbeiter.DE',
-            'Kununu.Score',
-            'Avg.Kununu.Score',
             'X1.Jahr.im.Betrieb',
-            'Diff.Gehalt.5.Jahre.rel',
             'Var2',
             'Var3',
-            'Var7',
-            'Gemeldete.Stellen.DE')] <- NULL
+            'Var7')] <- NULL
 
 
 # Create full model with all data to determine statistical significance (before Imputation)
@@ -87,8 +77,15 @@ df <- df %>%
   dplyr::rename(
     A1_Gender=Geschlecht,
     A2_Age=Alter,
-    B3_Early_retirement_rate = Var4,
-    B5_Degree_of_employment = Beschaeftigungsgrad,
+    A6_Education_level=Bildungsniveau,
+    B12_Salary_increase_last_5_years=Diff.Gehalt.5.Jahre.rel,
+    B13_Parental_leave=Mutterschutztage,
+    C1_Overall_employee_satisfaction=Kununu.Score,
+    C2_Employee_satisfaction_moving_average=Avg.Kununu.Score,
+    D2_Registered_jobs_GER=Gemeldete.Stellen.DE,
+    D3_Short_time_workers_GER=Kurzarbeiter.DE,
+    B3_Early_retirement_rate=Var4,
+    B5_Degree_of_employment=Beschaeftigungsgrad,
     B11_Salary_today_EUR=Gehalt.heute,
     B9_Salary_increase_last_year=Diff.Gehalt.1.Jahre.rel,
     B6_Gross_working_days=Soll.AT,
@@ -115,6 +112,7 @@ df <- df[,c(    'Monat',
                 'A3_Number_of_children',
                 'A4_Children_under_18_years',
                 'A5_Age_youngest_children',
+                'A6_Education_level',
                 'B1_Commute_distance_in_km',
                 'B2_Public_service_status_GER',
                 'B3_Early_retirement_rate',
@@ -126,12 +124,17 @@ df <- df[,c(    'Monat',
                 'B9_Salary_increase_last_year',
                 'B10_Tenure_in_month',
                 'B11_Salary_today_EUR',
+                'B12_Salary_increase_last_5_years',
+                'B13_Parental_leave',
+                'C1_Overall_employee_satisfaction',
+                'C2_Employee_satisfaction_moving_average',
+                'D1_Unemployment_rate_GER',
+                'D2_Registered_jobs_GER',
+                'D3_Short_time_workers_GER',
                 'E1_Covid_strigency_index_GER',
                 'E2_Covid_cases_GER',
                 'E3_Covid_Google_trends_GER',
-                'D1_Unemployment_rate_GER',
                 'Turnover')]
-
 
 # Imputation and data split in training and test data sets, save data to csv ----------
 
@@ -149,10 +152,17 @@ nominal_values=c('A2_Age',
                  'B9_Salary_increase_last_year',
                  'B10_Tenure_in_month',
                  'B11_Salary_today_EUR',
+                 'B12_Salary_increase_last_5_years',
+                 'B13_Parental_leave',
+                 'C1_Overall_employee_satisfaction',
+                 'C2_Employee_satisfaction_moving_average',
+                 'D1_Unemployment_rate_GER',
+                 'D2_Registered_jobs_GER',
+                 'D3_Short_time_workers_GER',
                  'E1_Covid_strigency_index_GER',
                  'E2_Covid_cases_GER',
-                 'E3_Covid_Google_trends_GER',
-                 'D1_Unemployment_rate_GER')
+                 'E3_Covid_Google_trends_GER')
+summary(df)
 
 # Impute missing values with bagImpute
 df[,nominal_values] <- preProcess(df[,nominal_values], method = "bagImpute") %>% 
@@ -163,11 +173,25 @@ df[,c('B1_Commute_distance_in_km',
       'B11_Salary_today_EUR',
       'B10_Tenure_in_month',
       'A5_Age_youngest_children',
-      'B5_Degree_of_employment')] <- df[,c('B1_Commute_distance_in_km',
+      'B5_Degree_of_employment',
+      'B13_Parental_leave',
+      'D1_Unemployment_rate_GER',
+      'D2_Registered_jobs_GER',
+      'D3_Short_time_workers_GER',
+      'E1_Covid_strigency_index_GER',
+      'E2_Covid_cases_GER',
+      'E3_Covid_Google_trends_GER')] <- df[,c('B1_Commute_distance_in_km',
                                         'B11_Salary_today_EUR',
                                         'B10_Tenure_in_month',
                                         'A5_Age_youngest_children',
-                                        'B5_Degree_of_employment' )] %>%  round()
+                                        'B5_Degree_of_employment',
+                                        'B13_Parental_leave',
+                                        'D1_Unemployment_rate_GER',
+                                        'D2_Registered_jobs_GER',
+                                        'D3_Short_time_workers_GER',
+                                        'E1_Covid_strigency_index_GER',
+                                        'E2_Covid_cases_GER',
+                                        'E3_Covid_Google_trends_GER')] %>%  round()
 
 
 # exclude protected class attributes that cause adverse impact, based on chosen model type  ------------

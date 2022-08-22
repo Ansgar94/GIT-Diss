@@ -1,12 +1,14 @@
+ERRORasdfasdf
+
 # Main Function to run scripts automatically
 
 # Introduction and presetting -----------
 
 # Choose between full ("research"), operational and revised model regarding adverse impact analysis 
-# exclude prodected class attributes  that violate discrimination criteria (age, gender)
+# exclude protected class attributes  that violate discrimination criteria (age, gender)
 # should protected groups be included? Should correlated features with protected group attributes be included?
-# Options: "full", "operational", "revised"
-adverse_impact_model_type <- "operational"
+# Options: "full", "revised"
+adverse_impact_model_type <- "revised"
 
 # choose grid_type full to perform a complete training process including a wider range of hyper parameters
 # This option could lead to way higher time consuming 
@@ -16,6 +18,7 @@ adverse_impact_model_type <- "operational"
 
 #Setting up seed for pseudo-random numbers to get reproducible results
 set.seed(1)
+
 
 # General R libraries for data analysis and plotting ---------------
 suppressPackageStartupMessages({
@@ -27,6 +30,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(psych)
   library(vtable)
+  library(ggplot2)
   # Data science frameworks for generalized parallel training, evalutation and prediction or visualization
   library(ModelMetrics)
   library(caret) #Central Framework for Machine Learning
@@ -61,23 +65,23 @@ suppressPackageStartupMessages({
   library(partykit)
   library(libcoin)
   library(mvtnorm)
+  library(DescTools)
 })
-
 
 # Print all relevant packages and their dependencies
 devtools::session_info()
 
 
-source("DRV_Preprocessing.R", echo=T)
+source(stringr::str_c(dirname(getwd()),"/DRV_Preprocessing.R"), echo=T)
 
-#source("DRV_statistical_analysis.R", echo=T) # commented out, since not relevant for experimental purposes
+#source(stringr::str_c(dirname(getwd()),"DRV_statistical_analysis.R"), echo=T) # commented out, since not relevant for experimental purposes
 
-#source("DRV_Resampling_methods.R", echo=T) # commented out, since resampling and balancing not increasing performance 
+#source(stringr::str_c(dirname(getwd()),"DRV_Resampling_methods.R"), echo=T) # commented out, since resampling and balancing not increasing performance 
 
-source("DRV_Model_Training.R", echo=T)
+source(stringr::str_c(dirname(getwd()),"/DRV_Model_Training.R"), echo=T)
 
-source("DRV_Analysis.R", echo=T)
+source(stringr::str_c(dirname(getwd()),"/DRV_Analysis.R"), echo=T)
 
-source("DRV_XAI.R", echo=T)
+source(stringr::str_c(dirname(getwd()),"/DRV_XAI.R"), echo=T)
 
-source("DRV_Adverse_Impact.R", echo=T)
+source(stringr::str_c(dirname(getwd()),"/DRV_Adverse_Impact.R"), echo=T)

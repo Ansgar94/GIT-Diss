@@ -24,7 +24,7 @@ fullSummary  <- function(data, lev = NULL, model = NULL){
   out <- c(a1, b1, c1)
   out}
 
-chosen_measure <- "Kappa"   #standard: 'Kappa', tested: AUC; Kappa, Spec
+chosen_measure <- "Kappa"   #standard: 'Kappa', tested: ROC; Kappa, Spec
 
 
 ctrl <- trainControl(method = 'repeatedcv', repeats=1, number=5, classProbs=T, summaryFunction = fullSummary, trim=F, returnData=F) #5,10
@@ -36,11 +36,23 @@ ctrl <- trainControl(method = 'repeatedcv', repeats=1, number=5, classProbs=T, s
 grid_type <- 'short'
 #grid_type <- 'full'
 
-#enable parallel clustering (stop command located at the buttom of model train_sampled)
+#enable parallel clustering (stop command located at the bottom of model train_sampled) --------------
 cl <- makePSOCKcluster(detectCores()-1)
-print(str_c('Number of cores used for parallel Processing is: ', detectCores()-1))  
+#cl <- makePSOCKcluster(8) SVM
+print(str_c('Number of CPU cores used for parallel processing is: ', detectCores()-1))  
 registerDoParallel(cl)
 
+modelLookup(model='rf')         # Random Forest -------
+#Hyperparameter: mtry = Number of variables randomly sampled as candidates at each split
+#these parameters are theoretically not important for accuracy (just for performance)https://stats.stackexchange.com/questions/50210/caret-and-randomforest-number-of-trees
+if (grid_type=='full')
+{grid_rf <- expand.grid(splitrule="gini",mtry=seq(from=2, to=8, by=2),min.node.size=c(3,5))}
+
+grid_rf <- expand.grid(splitrule="gini",mtry=c(6),min.node.size=c(10)) #min.node.size=c(10) for full model, 5 revised model
+
+model_rf<-caret::train(Turnover~.,data=train_sampled, method='ranger', trControl=ctrl, tuneGrid=grid_rf, metric=chosen_measure)
+print(model_rf)
+  
 
 modelLookup(model='glm')        # Generalized Linear Model -----
 #Hyperparameter: not needed (intercept and psy)
@@ -52,13 +64,16 @@ summary(model_glm$finalModel)
 
 modelLookup(model='rpart2')     # Decision Tree) --------
 #Hyperparameter: Maximum depth of decision tree
-#grid_rpart <- expand.grid(maxdepth=seq(from=2,to=10,by=1))
-grid_rpart <- expand.grid(cp=seq(from=0.005,to=0.015,by=0.001)) 
-model_rpart <- caret::train(Turnover ~., data=train_sampled %>% replace(.,.<0,0), method='rpart', trControl=ctrl, tuneGrid=grid_rpart, metric=chosen_measure)
+
+grid_rpart <- expand.grid(cp=seq(from=0.005,to=0.01,by=0.005)) 
+
+if (grid_type=='full')
+{grid_rpart <- expand.grid(cp=seq(from=0.001,to=0.03,by=0.002))}
+
+model_rpart <- caret::train(Turnover ~., data=train_sampled %>% replace(.,.<0,0), method='rpart', trControl=ctrl, tuneGrid=grid_rpart, metric="ROC")
 model_rpart$finalModel
 #Plotting decision tree to visualize rules used for prediction in this white-box
-plot_rpart<-rpart.plot(model_rpart$finalModel,roundint=T)
-
+rpart.plot(model_rpart$finalModel,roundint=T)
 
 
 
@@ -73,41 +88,38 @@ model_gbm<-caret::train(Turnover~., data=train_sampled, method='gbm', trControl=
 plot_gbm<-plot(model_gbm)
 plot_gbm
 
-modelLookup(model='pcaNNet')    # Neural Net with principal component analysis -------
+modelLookup(model='pcaNNet')    # Neural Net with principal component analysis (0PCA)-------
 # method 'nnet' does not train properly and RMSE does not decline for various Hyperparameter (possibly to much weights to learn)
 # tried solution: use a principal component analysis (pca) to reduce number of weights, different layouts/depth/number of neurons/aplha, usind subset of Inputs, plotting (NeuralNetTools)
 #Hyperparameter: size = number of hidden nodes, decay = alpha used in Backprogation to adjust weights
-grid_nnet <- expand.grid(size = seq(from=10,to=20, by=10), decay=seq(from=0.05,to=0.15,by=0.1))
+grid_nnet <- expand.grid(size = seq(from=10,to=30, by=2), decay=seq(from=0.01,to=0.31,by=0.05))
 if (grid_type=='full')
-{grid_nnet <- expand.grid(size = seq(from=5,to=50, by=5), decay=seq(from=0.1,to=0.31,by=0.1))}
+{grid_nnet <- expand.grid(size =  seq(from=10,to=50, by=5), decay=seq(from=0.01,to=0.15,by=0.02))}
 
-model_nnet <- caret::train(Turnover~., data=train_sampled, method='pcaNNet',trControl=ctrl,tuneGrid=grid_nnet, linout=F, metric=chosen_measure)
+model_pcannet <- caret::train(Turnover~., data=train_sampled, method='pcaNNet',trControl=ctrl,tuneGrid=grid_nnet, linout=F, metric="ROC")
+model_pcannet
 
-
-modelLookup(model='rf')         # Random Forest -------
-#Hyperparameter: mtry = Number of variables randomly sampled as candidates at each split
-# these parameters are theoretically not important for accuracy (just for performance)https://stats.stackexchange.com/questions/50210/caret-and-randomforest-number-of-trees
-if (grid_type=='full')
-{grid_rf <- expand.grid(splitrule="gini",mtry=seq(from=2, to=8, by=2),min.node.size=c(3,5))}
-
-grid_rf <- expand.grid(splitrule="gini",mtry=c(6),min.node.size=c(10)) #min.node.size=c(10) for full model, 5 revised model
-
-model_rf<-caret::train(Turnover~.,data=train_sampled, method='ranger', trControl=ctrl, tuneGrid=grid_rf, metric=chosen_measure)
-print(model_rf)
+#modelLookup(model='nnet')      # Neural Net withouht PCA -------
+##Hyperparameter: size = number of hidden nodes, decay = alpha used in Backprogation to adjust weights
+#grid_nnet <- expand.grid(size = seq(from=10,to=30, by=2), decay=seq(from=0.01,to=0.2,by=0.05))
+#if (grid_type=='full')
+#{grid_nnet <- expand.grid(size =  seq(from=10,to=50, by=5), decay=seq(from=0.01,to=0.15,by=0.02))}
+#model_nnet <- caret::train(Turnover~., data=train_sampled, method='nnet',trControl=ctrl,tuneGrid=grid_nnet, linout=F, metric="ROC")
 
 
 
-modelLookup(model='glmStepAIC') # Generalized Linear Model with step-wise parameter selection using AIC  #--------
 
-model_glmStepAIC <- caret::train(Turnover~., data=train_sampled, method='glmStepAIC', trControl=ctrl, metric=chosen_measure)
-model_glmStepAIC
-summary(model_glmStepAIC)
+#modelLookup(model='glmStepAIC') # Generalized Linear Model with step-wise parameter selection using AIC  #--------
+
+#model_glmStepAIC <- caret::train(Turnover~., data=train_sampled, method='glmStepAIC', trControl=ctrl, metric=chosen_measure)
+#model_glmStepAIC
+#summary(model_glmStepAIC)
 
 modelLookup(model='xgbDART')    # Extreme Gradient Boosting --------
-grid_xgbDART <- expand.grid(nrounds = c(50,100), max_depth = c(4,6), eta = c(0.4), gamma = 0, subsample = 0.5, colsample_bytree = c(0.8), rate_drop = c(0.01,0.1),
-                            skip_drop =  c(0.8,0.95), min_child_weight = 1)
+grid_xgbDART <- expand.grid(nrounds = c(50,100), max_depth = c(2,4), eta = c(0.4,0.5), gamma = 0, subsample = 0.5, colsample_bytree = c(0.8), rate_drop = c(0.01,0.1),
+                            skip_drop =  c(0.8), min_child_weight = 1)
 if (grid_type=='full'){
-  grid_xgbDART <- expand.grid(nrounds = c(100,200), max_depth = c(2,4,6), eta = c(0.4,0.5), gamma = 0, subsample = 0.5, colsample_bytree = c(0.6,0.8), rate_drop = c(0.01,0.1,0.5),
+  grid_xgbDART <- expand.grid(nrounds = c(50,100,200), max_depth = c(2,4,6), eta = c(0.4,0.5), gamma = 0, subsample = 0.5, colsample_bytree = c(0.6,0.8), rate_drop = c(0.01,0.1,0.5),
                               skip_drop =  c(0.8,0.95), min_child_weight = 1)
 }
 model_xgbDART <- caret::train(Turnover~., data=train_sampled, method='xgbDART',tuneGrid=grid_xgbDART,trControl=ctrl, metric=chosen_measure) # tuneLength=2
@@ -116,20 +128,50 @@ plot_xgbDART <- plot(model_xgbDART)
 plot_xgbDART
 
 
-# glmnet (Elastic nets) include or improve LARS, LASSO, RIDGE, STEPWISE, Full Ordinary Least Square (OLS) Models
-modelLookup(model='glmnet')
-grid_glmnet <- expand.grid(alpha=c(.01,.20,.40,.80,.99),lambda=seq(.10,2,length=5))
+
+modelLookup(model='glmnet') # glmnet (Elastic nets) include or improve LARS, LASSO, RIDGE, STEPWISE, Full Ordinary Least Square (OLS) Models ------
+grid_glmnet <- expand.grid(alpha=c(0.001, 0.005),lambda=seq(0.01,0.2,length=4))
 if (grid_type=='full'){
-  grid_glmnet <- expand.grid(alpha=c(.01,.05,.20,.40,.60,.80,.95,.99),lambda=seq(.10,2,length=30))
+  grid_glmnet <- expand.grid(alpha=c(0.0001,0.001, 0.005,0.01,0.1,0.95),lambda=seq(0.001,0.1,length=10))
 }
-model_glmnet <- caret::train(Turnover~., data=train_sampled, method='glmnet',tuneGrid=grid_glmnet,trControl=ctrl, metric=chosen_measure)
+model_glmnet <- caret::train(Turnover~., data=train_sampled, method='glmnet',tuneGrid=grid_glmnet,trControl=ctrl, metric="ROC")
 model_glmnet
 
 
+modelLookup(model='naive_bayes') # Naive Bayes --------------
+grid_nb <- expand.grid(laplace=c(0,0.5,1), usekernel=c(F,T), adjust=c(0.75, 1, 1.25, 1.5))
+model_nb <- caret::train(Turnover~., data=train_sampled, method='naive_bayes',tuneGrid=grid_nb,trControl=ctrl, metric=chosen_measure)
+model_nb
 
+
+
+modelLookup(model='svmLinearWeights') #--------------------
+#grid_svmLinearWeights <- expand.grid(cost=c(0.01),weight = c(1))
+#model_svmLinearWeights <- caret::train(Turnover~., data=train_sampled, method='svmLinearWeights',tuneGrid=grid_svmLinearWeights,trControl=ctrl, metric="ROC", preProcess= c("center", "scale"))
+
+
+#modelLookup(model='svmLinear2')  #(Support Vector Machine with linear kernel) --> long training required  -------------
+grid_svmLinear <- expand.grid(cost=0.1)#seq(0.0005,0.1,length=5))
+model_svmLinear <- caret::train(Turnover~., data=train_sampled, method='svmLinear2',tuneGrid=grid_svmLinear,trControl=ctrl, metric="ROC", preProcess= c("center", "scale"))
+model_svmLinear
+
+
+
+
+#Test downsampling svmLinear --> not good accuarcy
+#ctrl_down <- trainControl(method = 'repeatedcv', repeats=1, number=5, classProbs=T, summaryFunction = fullSummary, trim=F, returnData=F,sampling="down")
+#grid_svmLinear <- expand.grid(cost=seq(0.005,0.1,length=10))
+#model_svmLinear <- caret::train(Turnover~., data=train_sampled, method='svmLinear2',tuneGrid=grid_svmLinear,trControl=ctrl_down, metric="ROC", preProcess= c("center", "scale"))
+#model_svmLinear
+
+# svmlLinear (Support Vector Machine with linear kernel) --> NA values
+#modelLookup(model='svmPoly')
+#grid_svmPoly <- expand.grid(C=seq(0,2,length=3),degree=1,scale=0.01)
+#model_svmPoly <- caret::train(Turnover~., data=train_sampled, method='svmPoly',tuneGrid=grid_svmPoly,trControl=ctrl, metric=chosen_measure)
+#model_svmPoly
 
 ##modelLookup(model='knn')        # K-Nearest Neighbors  --------
-#Hyperparameter: Number of nearest-neigbbours
+#Hyperparameter: Number of nearest-neigbbours --> NA values
 
 ##grid_knn <- expand.grid(k=seq(from=5, to=5, by=5))
 ##if (grid_type=='full'){
@@ -139,6 +181,8 @@ model_glmnet
 ##model_knn
 
 
-# Close connection to cluster for parallel processing
+# Close connection to cluster for parallel processing -------------
+
+
 stopCluster(cl)
 print("Model training process finished")

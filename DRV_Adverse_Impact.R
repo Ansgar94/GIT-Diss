@@ -1,12 +1,46 @@
+# train revised model
+
+train_revised <- training
+train_revised[,c('A2_Age',
+                 'A1_Gender',
+                 'B10_Tenure_in_month',
+                 'A5_Age_youngest_children',
+                 'A4_Children_under_18_years1')] <- NULL #Satisfied with A2, A1, B10, A5, A4
+
+#enable parallel clustering (stop command located at the bottom of model train_sampled) --------------
+cl <- makePSOCKcluster(detectCores()-1)
+print(str_c('Number of CPU cores used for parallel processing is: ', detectCores()-1))  
+registerDoParallel(cl)
+
+modelLookup(model='rf')         # Random Forest -------
+#Hyperparameter: mtry = Number of variables randomly sampled as candidates at each split
+#these parameters are theoretically not important for accuracy (just for performance)https://stats.stackexchange.com/questions/50210/caret-and-randomforest-number-of-trees
+
+grid_rf <- expand.grid(splitrule="gini",mtry=c(6),min.node.size=c(10)) #min.node.size=c(10) for full model, 5 revised model
+
+if (grid_type=='full')
+{grid_rf <- expand.grid(splitrule="gini",mtry=seq(from=2, to=8, by=2),min.node.size=c(3,5))}
+
+model_rf_revised<-caret::train(Turnover~.,data=train_revised, method='ranger', trControl=ctrl, tuneGrid=grid_rf, metric=chosen_measure)
+print(model_rf_revised)
+
+
+stopCluster(cl)
+print("Model training process finished")
+
+
 # Preparing data for Adverse Impact analysis -------
+
+
+
 # Predict turnover probabilities
-df_adverse_impact <- test_protected[,which(!names(test_protected) %in% c("Monat"))] %>% 
-  mutate(Turnover_prob = predict(object=model_win, test_protected, type = "prob" )[, "Turnover"])#[,which(!names(test_protected) %in% c("Age","Gender"))]
+df_adverse_impact <- test[,which(!names(test) %in% c("Monat"))] %>% 
+  mutate(Turnover_prob = predict(object=model_rf_revised, test, type = "prob" )[, "Turnover"])#[,which(!names(test_protected) %in% c("Age","Gender"))]
 
 
 
-# Choosing threshold for Adverse Impact analysis
-p_adverse_impact <- 0.0585
+# Choosing threshold for Adverse Impact analysis, which should normally be the same threshold as the p 
+p_adverse_impact <- 0.05
 df_adverse_impact$Turnover_pred <- ifelse(df_adverse_impact[,"Turnover_prob"]>p_adverse_impact, "Turnover", "No_Turnover") %>% factor()
 df_adverse_impact$grouped_age <- ifelse(df_adverse_impact[,"A2_Age"]>median(df_adverse_impact[,"A2_Age"]), "old", "young") %>% factor()
 summary(df_adverse_impact)
@@ -138,18 +172,30 @@ exp(log(Ratio_age)-1.96*Ratio_age_SE)
 
 
 
-# Civil_servant_status analysis analysis: Turnover is higher vor civil_servants
+# Model revision --> gender analysis
+
+
+# Check for correlation with other variables for gender
+glm_revision_gender <- glm(A1_Gender ~., data = df[,2:27], family=binomial)
+summary(glm_revision_gender)
+
+# Check for correlation with other variables for age
+glm_revision_age <- glm(A2_Age ~., data = df[,2:27])
+summary(glm_revision_age)
+
+# Further analysis, not required for paper ------------
+#Civil_servant_status analysis analysis: Turnover is higher if the employee has a civil servants status
 df_civil_servant <- dplyr::count(df_adverse_impact, B2_Public_service_status_GER, Turnover)
 df_civil_servant
 df_civil_servant[2,3]/df_civil_servant[1,3] 
 df_civil_servant[4,3]/df_civil_servant[3,3] 
 
-# Check for correlation with other variables
-glm_civil_servant_status <- glm(B2_Public_service_status_GER ~., data = df, family=binomial)
-summary(glm_civil_servant_status)
+df_age
+Ratio_age
+df_gender
+Ratio_Gender
+model_rf_revised$results
 
-
-# Safe Image with name of model_type
-#paste("~/",adverse_impact_model_type,"_Model_24_02.RData",sep="") %>%  save.image()
-
-
+# Safe Image with name of model_type -----------
+#paste("~/",adverse_impact_model_type,"_Model_afterRenaming.RData",sep="") %>%  save.image()
+ENDOFPROGRAMMERROR

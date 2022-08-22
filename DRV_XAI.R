@@ -1,5 +1,4 @@
 # Set up Interpretable Machine Learning (IML) Framework  ------------------
-
 # Focus on relevant entities: most 1.000 relevant elements according to highest predicted probability
 df_xai <- test[,which(!names(test) %in% c("Monat"))] %>% 
   mutate(Turnover_prob = predict(object=model_win, test, type = "prob" )[, "Turnover"])  %>%  
@@ -62,8 +61,8 @@ plot(interact)
 
 
 # Matrix of all Feature Effects using ALE
-ALE_plot <- FeatureEffects$new(IML_Predictor)
-plot(ALE_plot)
+#ALE_plot <- FeatureEffects$new(IML_Predictor)
+#plot(ALE_plot)
 
 
 # Individual ALE plot for interesting features varying with number of intervals
@@ -76,39 +75,119 @@ if (!which(names(df_xai_X)=="A1_Gender") %>% is_empty() ) {
 }
 
 
+# Prepare seperate datasets for men and woman
+df_xai_X_men <- df_xai_X %>% filter(A1_Gender=="men")
+df_xai_X_woman <- df_xai_X %>% filter(A1_Gender=="woman")
+
+
 # Create Layout for continuous variables
-par(mfrow=c(3,3),yaxt="s",ann=F,mar = c(3, 3, 2 ,1) )
+par(mfrow=c(3,4),yaxt="s",ann=F,mar = c(3, 3, 2 ,1))
+
+
 
 # ALE Commute_distance_in_km
 ALEPlot(df_xai_X %>% filter(between(B1_Commute_distance_in_km,0,100)),
-        model_win, J=which(names(df_xai_X)=="B1_Commute_distance_in_km"), K=4, 
+        model_win, J=which(names(df_xai_X)=="B1_Commute_distance_in_km"), K=3, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
 title("B1_Commute_distance_in_km",ylab=NULL)
 
+# ALE Public service status
+if (!which(names(df_xai_X)=="B2_Public_service_status_GER") %>% is_empty() ) {
+  ALEPlot(df_xai_X,
+          model_win, J=which(names(df_xai_X)=="B2_Public_service_status_GER"), K=10, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  abline(h=0,col="lightgray",)
+  title("B2_Public_service_status_GER",ylab=NULL)
+}
+
+
+# ALE Sickness days
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=10, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B4_Sickness_days",ylab=NULL)
+
+
 # ALE Net_working_days
 ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="B8_Net_working_days"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B8_Net_working_days"), K=20, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
 title("B8_Net_working_days",ylab=NULL)
 
+
+# ALE Age -->
+if (!which(names(df_xai_X)=="A2_Age") %>% is_empty() ) {
+  ALEPlot(df_xai_X %>% filter(between(A2_Age,18,62)),
+          model_win, J=which(names(df_xai_X)=="A2_Age"), K=10, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  abline(h=0,col="lightgray",)
+  title("A2_Age",ylab=NULL)
+}
+
+
+# ALE Salary_increase_last_5_years --> not robust!
+ALEPlot(df_xai_X %>% filter(between(B12_Salary_increase_last_5_years,-0.1,0.3)),
+        model_win, J=which(names(df_xai_X)=="B12_Salary_increase_last_5_years"), K=5, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B12_Salary_increase_last_5_years",ylab=NULL)
+
+
 # ALE Salary_today_in_EUR
 ALEPlot(df_xai_X %>% filter(between(B11_Salary_today_EUR,1000,6000)),
-        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=6, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
 title("B11_Salary_today_EUR",ylab=NULL)
 
 
-# ALE Tenure_in_month
-if (!which(names(df_xai_X)=="B10_Tenure_in_month") %>% is_empty() ) {
+# ALE Education level
+if (!which(names(df_xai_X)=="A6_Education_level") %>% is_empty() ) {
   ALEPlot(df_xai_X,
-          model_win, J=which(names(df_xai_X)=="B10_Tenure_in_month"), K=10, 
+          model_win, J=which(names(df_xai_X)=="A6_Education_level"), K=10, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  abline(h=0,col="lightgray")
+  title("A6_Education_level",ylab=NULL)
+}
+
+# ALE Tenure_in_month
+if (!which(names(df_xai_X)=="B10_Tenure_in_month") %>% is_empty()  ) {
+  ALEPlot(df_xai_X,
+          model_win, J=which(names(df_xai_X)=="B10_Tenure_in_month"), K=50, 
           pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
   abline(h=0,col="lightgray",)
-  title("B10_Tenure_in_month",ylab=NULL)
+  title("B10_Tenure_in_month")
 }
+
+
+# ALE Salary_increase_last_year --> not robust!
+ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,0,0.15)),
+        model_win, J=which(names(df_xai_X)=="B9_Salary_increase_last_year"), K=30, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B9_Salary_increase_last_year",ylab=NULL)
+
+
+# ALE Degree_of_employment
+ALEPlot(df_xai_X %>% filter(between(B5_Degree_of_employment,10,100)),
+        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=20, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("B5_Degree_of_employment",ylab=NULL)
+
+# ALE Number_of_children
+ALEPlot(df_xai_X,
+        model_win, J=which(names(df_xai_X)=="A3_Number_of_children"), K=100, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+abline(h=0,col="lightgray",)
+title("A3_Number_of_children",ylab=NULL)
+
+
+# Training of ALE below TOP 9 (inactive) -------------
+ALE_train_other_ALE<- function() {
 
 # ALE Salary_increase_last_year --> not robust!
 ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,-0.1,0.2)),
@@ -117,38 +196,6 @@ ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,-0.1,0.2)),
 abline(h=0,col="lightgray",)
 title("B9_Salary_increase_last_year",ylab=NULL)
 
-# ALE Sick_days
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=20, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
-title("B4_Sickness_days",ylab=NULL)
-
-
-# ALE Age
-if (!which(names(df_xai_X)=="A2_Age") %>% is_empty() ) {
-  ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,20,65),
-          model_win, J=which(names(df_xai_X)=="A2_Age"), K=10, 
-          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-  abline(h=0,col="lightgray",)
-  title("A2_Age",ylab=NULL)
-}
-
-
-# ALE Number_of_children
-ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="A3_Number_of_children"), K=50, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
-title("A3_Number_of_children",ylab=NULL)
-
-
-# ALE Degree_of_employment
-ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=10, 
-        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
-title("B5_Degree_of_employment",ylab=NULL)
 
 # ALE Early_retirement_rate
 ALEPlot(df_xai_X ,
@@ -159,7 +206,7 @@ title("B3_Early_retirement_rate",ylab=NULL)
 
 # ALE Vacation_days
 ALEPlot(df_xai_X ,
-        model_win, J=which(names(df_xai_X)=="B7_Vacation_days"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B7_Vacation_days"), K=5, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
 title("B7_Vacation_days",ylab=NULL)
@@ -167,7 +214,7 @@ title("B7_Vacation_days",ylab=NULL)
 
 # ALE Unemployment_rate_ger
 ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="D1_Unemployment_rate_GER"), K=10, 
+        model_win, J=which(names(df_xai_X)=="D1_Unemployment_rate_GER"), K=2, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
 title("D1_Unemployment_rate_GER",ylab=NULL)
@@ -180,7 +227,7 @@ ALEPlot(df_xai_X,
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
   abline(h=0,col="lightgray",)
   title("A5_Age_youngest_children",ylab=NULL)
-}
+
 
 
 # ALE Gross_working_days
@@ -211,9 +258,9 @@ ALEPlot(df_xai_X,
 abline(h=0,col="lightgray",)
 title("E1_Covid_strigency_index_GER",ylab=NULL)
 
+}
 
-
-
+}
 
 
 # Second order ALE/PDP Interaction
@@ -233,26 +280,6 @@ title("E1_Covid_strigency_index_GER",ylab=NULL)
 #?TreeSurrogate
 
 
-# Use post-hoc explanations from LIME and SHAP to explain the Black Box on local level   -----------
-
-
-# LIME (Local Interpretable Model-agnostic Explanations) 
-
-# Global surrogate model can improve the understanding of the global model behaviour. 
-# We can also fit a model locally to understand an individual prediction better. 
-# The local model fitted by LocalModel is a linear regression model and the data points are weighted by how close they are to the data point 
-# for wich we want to explain the prediction
-
-lime.explain <- list()
-
-for (i in 1:10){
-  lime.explain[[i]] <- LocalModel$new(IML_Predictor, k=ncol(df_xai)-2, x.interest = df_xai[i,])
-}
-
-lime.explain[[10]]$plot()
-lime.explain[[10]]$results
-
-
 
 # SHAPley (SHapley Additive exPlanations) ------------
 #An alternative for explaining individual predictions is a method from coalitional game theory named Shapley value. 
@@ -261,22 +288,22 @@ lime.explain[[10]]$results
 SHAPley.explain <- list()
 SHAPley.plot <- list()
 
+
 for (i in 1:200){
   #calculate SHAP values
   SHAPley.explain[[i]] <- Shapley$new(IML_Predictor, 
-                                      x.interest = df_xai %>% 
-                                        .[,which(!names(df_xai) %in% c("Turnover","Monat","Turnover_prob"))] %>% 
-                                        .[i,], 
-                                      sample.size=25) #50,200
+                                      x.interest = df_xai_X[i,])
   
   #create plot SHAP values
-  SHAPley.plot[[i]]<- SHAPley.explain[[i]]$results %>%
-    top_n(10, wt = abs(phi)) %>%
-    ggplot(aes(phi, reorder(feature.value, phi, color = phi > 0))) +
-    geom_bar(stat="identity") + 
+  SHAPley.plot[[i]] <- SHAPley.explain[[i]]$results %>% 
+    .[order(abs(.$phi), decreasing = TRUE), ] %>% 
+    .[abs(.$phi)>0.02, ] %>% 
+    ggplot(aes(phi, reorder(feature.value, phi), color = phi < 0)) +
+    geom_bar(stat="identity",fill="transparent",size=1.2) + 
     theme_classic() + 
+    theme(plot.title=element_text(size=10))+
     labs(x="Explanation Contribution", y="Feature and Value") +
-    scale_color_discrete(name="Direction", labels=c("decrease","increase"))+
+    scale_color_discrete(name="Direction", labels=c("increase","decrease"))+
     ggtitle(paste("Prob(RR):", 
                   toString(round(df_xai[i, "Turnover_prob"],2)), 
                   "|Prob(SHAP):", 
@@ -284,43 +311,44 @@ for (i in 1:200){
                     top_n(10, wt = abs(phi)) %>%
                     .$"phi" %>% 
                     sum() %>% 
-                    round(.,digits=3)
-                  
-    ))
+                    round(.,digits=3)))
 }
 
 
-# portray examples in a grid
-xai_plot <- do.call("grid.arrange",c( 
-                        SHAPley.plot[62], #sick      # 63 Long commute, part time worker with young child
-                        SHAPley.plot[107], #old      #  76 Full sick_days as early indicator for older employees, but not as strong in management area
-                        SHAPley.plot[115], #mother   #  107 Established Manager with high Sick_Days
-                        SHAPley.plot[117])) #new manager   # 116 Newly hired Manager with young children
 
+# plot examples in a 2X2 grid
+xai_plot <- do.call("grid.arrange",c(SHAPley.plot[1], #1 --> example 1
+                                     SHAPley.plot[88], 
+                                     SHAPley.plot[63],
+                                     SHAPley.plot[65],
+                                     SHAPley.plot[72], #72 --> example 2
+                                     SHAPley.plot[92])) 
+#1 88 low degree of employement, early retirement, net=0 
+#6  Net = 0 / Age youngest children = 33
+#9 19 25 26 49  66 70 full sickness and/or net = 0, manager
+#12 new manager
+#63 65 72 Mother of young child with salary and salary increase, networking days = 0 (Prob check 0.58 vs. 0.83)
+#64 67 68 69 shortly before pension (63+)
+#77 manager and parent of young child
+#92 113 150 Balanced contributions, low turnover probability, sick mother of young child but gut salary (increase)
 
-xai_plot_test <- do.call("grid.arrange",c( 
-  SHAPley.plot[175], # Long commute, part time worker with young child
-  SHAPley.plot[177], # Full sick_days as early indicator for older employees
-  SHAPley.plot[187], # Established Manager with high Sick_Days
-  SHAPley.plot[190]))
 
 # Print results in console
 SHAPley.explain[[1]]$results
 
 # find relevant examples
 xai_examples <-list()
-for (i in 1:200){ 
+for (i in 1:100){ 
   #calculate SHAP values
   ifelse (
   'A3_Number_of_children=0' %in% SHAPley.explain[[i]]$results$feature.value
-  & !('A4_Children_under_18_years=0' %in% SHAPley.explain[[i]]$results$feature.value)
-  | ('B1_Commute_distance_in_km=14' %in% SHAPley.explain[[i]]$results$feature.value),
+  | !('A4_Children_under_18_years=0' %in% SHAPley.explain[[i]]$results$feature.value),
+#  | ('B1_Commute_distance_in_km=14' %in% SHAPley.explain[[i]]$results$feature.value),
   xai_examples [[i]] <- "bad",
   xai_examples [[i]] <- "good")
 }
 
-xai_examples[1:200]
-
+xai_examples[1:100]
 
 # SHAP using fastshap package
 
@@ -343,6 +371,27 @@ xai_examples[1:200]
 #CBA_model <- CBA(Turnover~.,df_xai[,which(!names(df_xai) %in% c("Monat","Turnover_prob"))])
 
 #inspectDT(CBA_model$rules)
+
+# Use post-hoc explanations from LIME to explain the Black Box on local level   -----------
+
+
+# LIME (Local Interpretable Model-agnostic Explanations) 
+
+# Global surrogate model can improve the understanding of the global model behaviour. 
+# We can also fit a model locally to understand an individual prediction better. 
+# The local model fitted by LocalModel is a linear regression model and the data points are weighted by how close they are to the data point 
+# for wich we want to explain the prediction
+
+lime.explain <- list()
+
+for (i in 1:10){
+  lime.explain[[i]] <- LocalModel$new(IML_Predictor, k=ncol(df_xai)-2, x.interest = df_xai[i,])
+}
+
+lime.explain[[8]]$plot()
+lime.explain[[11]]$results
+
+
 
 # TO-DO: Using the other packages without IML Framework (Treeshap, Anchors...) ----------
 # Treeshap as optimized version for treea algorithms (Random Forest, XGBoost, etc.): https://github.com/ModelOriented/treeshap
