@@ -136,8 +136,6 @@ model_win <- summary(resampling_training)$statistics$Kappa[,'Mean'] %>%
                names() %>% 
                model_list[[.]]
 # alternatively choose best model on test data:  model_win <- model_list[[rownames(test_results[which.max(test_results$ROC),])]]
-# model_win <- model_list[['ExtremeGradientBoosting']]
-# model_win <- model_list[['RandomForest']]
 print("The best model on test data is: ")
 model_win
 
@@ -196,25 +194,6 @@ for(p in thresholds_p){
 }
 conMalist_rel
 
-
-# Compare Performance during different month on test data
-conMalist_month <- list()
-for(i in seq(1,6)){
-  conMalist_month[[paste0("ConMa_",i)]] <- confusionMatrix(
-    ifelse(prob[seq(1+(i-1)*floor(nrow(test)/6),i*floor(nrow(test)/6)),"Turnover"]>p_chosen,
-           "Turnover", 
-           "No_Turnover") 
-    %>% factor(),
-    test[seq(1+(i-1)*floor(nrow(test)/6),i*floor(nrow(test)/6)),"Turnover"], 
-    positive="Turnover")$table/nrow(test)*100 %>% round(.,4)
-}
-
-# Calculating real values taking into in account that 6 month are analyzed
-for (conMa in conMalist) {  
-  print(round(conMa/6,0))
-}
-
-
 # Collect times spend for hyper parameterization in  parallel computing ------
 
 # Safe computation time for all models in a data frame
@@ -232,35 +211,6 @@ colnames(df_times) <- c('User','System','Overall')
 df_times[,'Method'] <- factor(names(model_list))
 df_times 
 
-# Plotting results by using different graphs for each reason time is comsumted (User, System, verstrichen)
-#plot_times <- reshape2::melt(df_times, id.vars='Method', variable.name='Computing',value.name='Time') %>% 
-#  ggplot(aes(x=Computing,y=Time,fill=Method))+
-#geom_bar(stat='identity',position='dodge')+
-#  scale_fill_manual(values = c('darkblue', 'darkred','darkgreen','darkgrey','darkorange','black','cyan4'))+
-#  theme_light()+
-#  facet_wrap(~ Computing, scales = 'free', nrow = 1) 
-#plot_times
-
-
-
-#Preparing results of prediction performance on Test data for plotting as a melted Version with factors
-#test_results[,'model'] <- factor(names(model_list))
-#
-#plot_results <- melt(test_results, id.vars='model', variable.name='measure',value.name='value') %>% 
-#  ggplot(aes(x=measure,y=value,fill=model))+
-#  geom_bar(stat='identity',position='dodge')+
-#  theme_light()+
-#  facet_wrap(~ measure, scales = 'free', nrow = 1) 
-#plot_results#
-
-# Plot results on test data vs. time needed to train
-#df_acc_vs_time <- data.frame("Method" = df_times$Method, 
-#                             "Minutes_spend_for_Training" = df_times$Overall/60, 
-#                             "Kappa" = test_results$Kappa)
-#df_acc_vs_time
-
-
-
 
 
 
@@ -271,7 +221,7 @@ df_times
 
 #print("Inference on test data finished")
 
-
+# Plot specific comparison plots between algorithms ---------
 # Extreme p=0.01: try to find every employee churning, accepting high FP rate
 plot_test_kappa_ci_0.01
 
@@ -295,3 +245,15 @@ plot_test_kappa_ci_0.07
 
 # Extreme p=0.07: try to find many employee churning, restricting FP rate
 plot_test_ROC_ci
+
+
+# Calculate result columns and draw samples -----------------
+test_predicted <- test%>% 
+  mutate(Turnover_prob = predict(object=model_rf, test, type = "prob" )[, "Turnover"]) %>% 
+  mutate(Turnover_pred = ifelse(.[,"Turnover_prob"]>p_chosen, "Turnover", "No_Turnover") %>% factor())
+summary(test_predicted)
+
+# Draw sample for true positive and for false positive
+df_sample <- rbind(sample_n(test_predicted %>% filter(Turnover=="Turnover", Turnover_pred=="Turnover"),10),
+  sample_n(test_predicted %>% filter(Turnover=="No_Turnover", Turnover_pred=="Turnover"),10))
+df_sample

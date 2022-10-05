@@ -5,7 +5,7 @@ train_revised[,c('A2_Age',
                  'A1_Gender',
                  'B10_Tenure_in_month',
                  'A5_Age_youngest_children',
-                 'A4_Children_under_18_years1')] <- NULL #Satisfied with A2, A1, B10, A5, A4
+                 'A4_Children_under_18_years')] <- NULL #Satisfied with A2, A1, B10, A5, A4
 
 #enable parallel clustering (stop command located at the bottom of model train_sampled) --------------
 cl <- makePSOCKcluster(detectCores()-1)
@@ -18,12 +18,7 @@ modelLookup(model='rf')         # Random Forest -------
 
 grid_rf <- expand.grid(splitrule="gini",mtry=c(6),min.node.size=c(10)) #min.node.size=c(10) for full model, 5 revised model
 
-if (grid_type=='full')
-{grid_rf <- expand.grid(splitrule="gini",mtry=seq(from=2, to=8, by=2),min.node.size=c(3,5))}
-
 model_rf_revised<-caret::train(Turnover~.,data=train_revised, method='ranger', trControl=ctrl, tuneGrid=grid_rf, metric=chosen_measure)
-print(model_rf_revised)
-
 
 stopCluster(cl)
 print("Model training process finished")
@@ -134,6 +129,10 @@ Ratio_young <- T_young/(T_young+NT_young)
 Ratio_age   <- min(Ratio_old,Ratio_young)/max(Ratio_old,Ratio_young)
 Ratio_age
 
+
+
+
+
 # Pearson's Chi-squared test for age
 df_age %>% 
   pivot_wider(names_from=Turnover_pred,values_from=n) %>% 
@@ -183,19 +182,53 @@ summary(glm_revision_gender)
 glm_revision_age <- glm(A2_Age ~., data = df[,2:27])
 summary(glm_revision_age)
 
-# Further analysis, not required for paper ------------
-#Civil_servant_status analysis analysis: Turnover is higher if the employee has a civil servants status
-df_civil_servant <- dplyr::count(df_adverse_impact, B2_Public_service_status_GER, Turnover)
-df_civil_servant
-df_civil_servant[2,3]/df_civil_servant[1,3] 
-df_civil_servant[4,3]/df_civil_servant[3,3] 
 
+# Adverse Impact Analysis Age, separated for men ---------
+df_age_men <- dplyr::count(df_adverse_impact %>% 
+                             filter(A1_Gender=="men"), 
+                           grouped_age, 
+                           Turnover_pred)
+df_age_men
+NT_old_men <-  df_age_men[1,3]
+T_old_men <-  df_age_men[2,3]
+NT_young_men <-  df_age_men[3,3]
+T_young_men <-  df_age_men[4,3]
+Ratio_total_age_men <- (T_old_men + T_young_men) / (NT_old_men+T_old_men+NT_young_men+T_young_men)
+Ratio_total_age_men
+Ratio_old_men <- T_old_men/(NT_old_men+T_old_men)
+Ratio_young_men <- T_young_men/(T_young_men+NT_young_men)
+Ratio_age_men   <- min(Ratio_old_men,Ratio_young_men)/max(Ratio_old_men,Ratio_young_men)
+Ratio_age_men
+
+
+# Adverse Impact Analysis Age, separated: ONLY FOR woman ---------
+df_age_woman <- dplyr::count(df_adverse_impact %>% 
+                             filter(A1_Gender=="woman"), 
+                           grouped_age, 
+                           Turnover_pred)
+df_age_woman
+NT_old_woman <-  df_age_woman[1,3]
+T_old_woman <-  df_age_woman[2,3]
+NT_young_woman <-  df_age_woman[3,3]
+T_young_woman <-  df_age_woman[4,3]
+Ratio_total_age_woman <- (T_old_woman + T_young_woman) / (NT_old_woman+T_old_woman+NT_young_woman+T_young_woman)
+Ratio_total_age_woman
+Ratio_old_woman <- T_old_woman/(NT_old_woman+T_old_woman)
+Ratio_young_woman <- T_young_woman/(T_young_woman+NT_young_woman)
+Ratio_age_woman   <- min(Ratio_old_woman,Ratio_young_woman)/max(Ratio_old_woman,Ratio_young_woman)
+Ratio_age_woman
+
+
+
+
+#print results
 df_age
 Ratio_age
 df_gender
 Ratio_Gender
 model_rf_revised$results
 
+
 # Safe Image with name of model_type -----------
 #paste("~/",adverse_impact_model_type,"_Model_afterRenaming.RData",sep="") %>%  save.image()
-ENDOFPROGRAMMERROR
+ENDOFPROGRAMMERROR #needed to get notification to smart phone

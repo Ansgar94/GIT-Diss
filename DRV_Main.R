@@ -1,5 +1,3 @@
-ERRORasdfasdf
-
 # Main Function to run scripts automatically
 
 # Introduction and presetting -----------

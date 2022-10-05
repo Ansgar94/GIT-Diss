@@ -80,117 +80,243 @@ df_xai_X_men <- df_xai_X %>% filter(A1_Gender=="men")
 df_xai_X_woman <- df_xai_X %>% filter(A1_Gender=="woman")
 
 
-# Create Layout for continuous variables
-par(mfrow=c(3,4),yaxt="s",ann=F,mar = c(3, 3, 2 ,1))
+plot_ALE_fun <- function() {
 
+# Create Layout for continuous variables
+par(mfrow=c(3,4),yaxt="s",ann=F,mar = c(3, 3, 2 ,1),fg='black',bty='n')
 
 
 # ALE Commute_distance_in_km
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
 ALEPlot(df_xai_X %>% filter(between(B1_Commute_distance_in_km,0,100)),
         model_win, J=which(names(df_xai_X)=="B1_Commute_distance_in_km"), K=3, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men%>% filter(between(B1_Commute_distance_in_km,0,100)),
+        model_win, J=which(names(df_xai_X)=="B1_Commute_distance_in_km"), K=3, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman %>% filter(between(B1_Commute_distance_in_km,0,100)),
+        model_win, J=which(names(df_xai_X)=="B1_Commute_distance_in_km"), K=3, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B1_Commute_distance_in_km",ylab=NULL)
 
 # ALE Public service status
 if (!which(names(df_xai_X)=="B2_Public_service_status_GER") %>% is_empty() ) {
-  ALEPlot(df_xai_X,
-          model_win, J=which(names(df_xai_X)=="B2_Public_service_status_GER"), K=10, 
+  par(new=F,xaxt='s',yaxt='s',col='red',fg='red',usr=c(0,1,-0.06,0.6))
+  ALEPlot(df_xai_X_woman,
+          model_win, J=which(names(df_xai_X)=="B2_Public_service_status_GER"), K=2, 
           pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-  abline(h=0,col="lightgray",)
   title("B2_Public_service_status_GER",ylab=NULL)
+  abline(h=0,col="lightgray",lwd=1)
+  par(new=F,xaxt='s',yaxt='s',col='black',fg='black')
+#  title("B2_Public_service_status_GER",ylab=NULL)
+#  par(new=F,xaxt='s',yaxt='s',col='blue',fg='blue')
+#  ALEPlot(df_xai_X_men,
+#          model_win, J=which(names(df_xai_X)=="B2_Public_service_status_GER"), K=2, 
+#          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+#  abline(h=0,col="lightgray",)
+#  title("B2_Public_service_status_GER",ylab=NULL)
+#  par(new=F,xaxt='s',yaxt='s',col='black',fg='black')
+#  ALEPlot(df_xai_X,
+#          model_win, J=which(names(df_xai_X)=="B2_Public_service_status_GER"), K=2, 
+#          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+#  abline(h=0,col="lightgray",)
+#  title("B2_Public_service_status_GER",ylab=NULL)
 }
 
 
+
 # ALE Sickness days
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
 ALEPlot(df_xai_X,
-        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=10, 
+        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=15, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men,
+        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=15, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman,
+        model_win, J=which(names(df_xai_X)=="B4_Sickness_days"), K=15, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B4_Sickness_days",ylab=NULL)
 
 
 # ALE Net_working_days
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
 ALEPlot(df_xai_X,
         model_win, J=which(names(df_xai_X)=="B8_Net_working_days"), K=20, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men,
+        model_win, J=which(names(df_xai_X)=="B8_Net_working_days"), K=20, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman,
+        model_win, J=which(names(df_xai_X)=="B8_Net_working_days"), K=20, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B8_Net_working_days",ylab=NULL)
 
 
-# ALE Age -->
+# ALE Age
 if (!which(names(df_xai_X)=="A2_Age") %>% is_empty() ) {
-  ALEPlot(df_xai_X %>% filter(between(A2_Age,18,62)),
-          model_win, J=which(names(df_xai_X)=="A2_Age"), K=10, 
+  par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
+  ALEPlot(df_xai_X %>% filter(between(A2_Age,16,61)),
+          model_win, J=which(names(df_xai_X)=="A2_Age"), K=15, 
           pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-  abline(h=0,col="lightgray",)
+  abline(h=0,col="lightgray",lwd=1)
+  par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+  ALEPlot(df_xai_X_men %>% filter(between(A2_Age,16,61)),
+          model_win, J=which(names(df_xai_X)=="A2_Age"), K=15, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+  ALEPlot(df_xai_X_woman %>% filter(between(A2_Age,16,61)),
+          model_win, J=which(names(df_xai_X)=="A2_Age"), K=15, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
   title("A2_Age",ylab=NULL)
 }
 
 
 # ALE Salary_increase_last_5_years --> not robust!
-ALEPlot(df_xai_X %>% filter(between(B12_Salary_increase_last_5_years,-0.1,0.3)),
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
+ALEPlot(df_xai_X %>% filter(between(B12_Salary_increase_last_5_years,-0.1,0.25)),
         model_win, J=which(names(df_xai_X)=="B12_Salary_increase_last_5_years"), K=5, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men %>% filter(between(B12_Salary_increase_last_5_years,-0.1,0.25)),
+        model_win, J=which(names(df_xai_X)=="B12_Salary_increase_last_5_years"), K=5, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman %>% filter(between(B12_Salary_increase_last_5_years,-0.1,0.25)),
+        model_win, J=which(names(df_xai_X)=="B12_Salary_increase_last_5_years"), K=5, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B12_Salary_increase_last_5_years",ylab=NULL)
 
 
 # ALE Salary_today_in_EUR
-ALEPlot(df_xai_X %>% filter(between(B11_Salary_today_EUR,1000,6000)),
-        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=6, 
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
+ALEPlot(df_xai_X %>% filter(between(B11_Salary_today_EUR,2000,6000)),
+        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=100, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men %>% filter(between(B11_Salary_today_EUR,2000,6000)),
+        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=100, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman %>% filter(between(B11_Salary_today_EUR,2000,6000)),
+        model_win, J=which(names(df_xai_X)=="B11_Salary_today_EUR"), K=100, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B11_Salary_today_EUR",ylab=NULL)
 
 
 # ALE Education level
 if (!which(names(df_xai_X)=="A6_Education_level") %>% is_empty() ) {
-  ALEPlot(df_xai_X,
-          model_win, J=which(names(df_xai_X)=="A6_Education_level"), K=10, 
+
+  
+  par(new=F,xaxt='n',yaxt='s',col='blue',fg="blue")
+ # title("A6_Education_level",ylab=NULL)
+  ALEPlot(df_xai_X_men,
+          model_win, J=which(names(df_xai_X)=="A6_Education_level"), K=2, 
           pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-  abline(h=0,col="lightgray")
+  abline(h=0,col="lightgray",lwd=1)
   title("A6_Education_level",ylab=NULL)
+  par(new=F,xaxt='n',yaxt='s',col='black',fg="black")
+#  title("A6_Education_level",ylab=NULL)
+#  par(new=F,xaxt='n',yaxt='s',col='red',fg="red")
+#  ALEPlot(df_xai_X_woman,
+#          model_win, J=which(names(df_xai_X)=="A6_Education_level"), K=2, 
+#          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+#  abline(h=0,col="lightgray",lwd=1)
+#  title("A6_Education_level",ylab=NULL)
+#  par(new=F,xaxt='n',yaxt='s',col='black',fg="black")
+#  ALEPlot(df_xai_X,
+#          model_win, J=which(names(df_xai_X)=="A6_Education_level"), K=2, 
+#          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+#  abline(h=0,col="lightgray",lwd=1)
 }
 
 # ALE Tenure_in_month
 if (!which(names(df_xai_X)=="B10_Tenure_in_month") %>% is_empty()  ) {
+  par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
   ALEPlot(df_xai_X,
           model_win, J=which(names(df_xai_X)=="B10_Tenure_in_month"), K=50, 
           pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-  abline(h=0,col="lightgray",)
+  abline(h=0,col="lightgray",lwd=1)
+  par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+  ALEPlot(df_xai_X_men,
+          model_win, J=which(names(df_xai_X)=="B10_Tenure_in_month"), K=20, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+  par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+  ALEPlot(df_xai_X_woman,
+          model_win, J=which(names(df_xai_X)=="B10_Tenure_in_month"), K=50, 
+          pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
   title("B10_Tenure_in_month")
 }
 
 
 # ALE Salary_increase_last_year --> not robust!
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
 ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,0,0.15)),
         model_win, J=which(names(df_xai_X)=="B9_Salary_increase_last_year"), K=30, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men %>% filter(between(B9_Salary_increase_last_year,0,0.15)),
+        model_win, J=which(names(df_xai_X)=="B9_Salary_increase_last_year"), K=30, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman %>% filter(between(B9_Salary_increase_last_year,0,0.15)),
+        model_win, J=which(names(df_xai_X)=="B9_Salary_increase_last_year"), K=30, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B9_Salary_increase_last_year",ylab=NULL)
 
 
 # ALE Degree_of_employment
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
 ALEPlot(df_xai_X %>% filter(between(B5_Degree_of_employment,10,100)),
-        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=20, 
+        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=15, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men %>% filter(between(B5_Degree_of_employment,10,100)),
+        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=15, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman %>% filter(between(B5_Degree_of_employment,10,100)),
+        model_win, J=which(names(df_xai_X)=="B5_Degree_of_employment"), K=15, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("B5_Degree_of_employment",ylab=NULL)
 
 # ALE Number_of_children
+par(new=F,xaxt='s',yaxt='s',col=rgb(169/255,169/255,169/255,alpha = 0.9),lwd=5)
 ALEPlot(df_xai_X,
         model_win, J=which(names(df_xai_X)=="A3_Number_of_children"), K=100, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
-abline(h=0,col="lightgray",)
+abline(h=0,col="lightgray",lwd=1)
+par(new=T,xaxt='n',yaxt='n',col='blue',bty='n',lwd=1)
+ALEPlot(df_xai_X_men,
+        model_win, J=which(names(df_xai_X)=="A3_Number_of_children"), K=100, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
+par(new=T,xaxt='n',yaxt='n',col='red',lwd=1)
+ALEPlot(df_xai_X_woman,
+        model_win, J=which(names(df_xai_X)=="A3_Number_of_children"), K=100, 
+        pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 title("A3_Number_of_children",ylab=NULL)
+}
 
+plot_ALE_fun()
 
-# Training of ALE below TOP 9 (inactive) -------------
+# Training of ALE below TOP 12 (inactive) -------------
 ALE_train_other_ALE<- function() {
 
 # ALE Salary_increase_last_year --> not robust!
-ALEPlot(df_xai_X %>% filter(between(B9_Salary_increase_last_year,-0.1,0.2)),
+ALEPlot(df_xai_X_woman %>% filter(between(B9_Salary_increase_last_year,-0.1,0.2)),
         model_win, J=which(names(df_xai_X)=="B9_Salary_increase_last_year"), K=20, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
@@ -198,7 +324,7 @@ title("B9_Salary_increase_last_year",ylab=NULL)
 
 
 # ALE Early_retirement_rate
-ALEPlot(df_xai_X ,
+ALEPlot(df_xai_X_woman ,
         model_win, J=which(names(df_xai_X)=="B3_Early_retirement_rate"), K=20, 
         pred.fun=function(X.model, newdata) as.numeric(predict(X.model, newdata)))
 abline(h=0,col="lightgray",)
@@ -388,32 +514,5 @@ for (i in 1:10){
   lime.explain[[i]] <- LocalModel$new(IML_Predictor, k=ncol(df_xai)-2, x.interest = df_xai[i,])
 }
 
-lime.explain[[8]]$plot()
-lime.explain[[11]]$results
-
-
-
-# TO-DO: Using the other packages without IML Framework (Treeshap, Anchors...) ----------
-# Treeshap as optimized version for treea algorithms (Random Forest, XGBoost, etc.): https://github.com/ModelOriented/treeshap
-
-#model_unified <- ranger.unify(model_rf)
-
-
-# Using Anchors and other XAI methods, https://github.com/viadee/anchorsOnR 
-
-#model_type("classification")
-
-#Create Anchor explainer for test data
-#anchor_explainer <- anchors(df_xai, model_win)
-#?anchors()
-
-#Use Anchor explainer on XAI_examples
-
-#anchor_explanations <- explain(df_xai[5,],anchor_explainer, labels="Turnover")
-#anchor_explanations
-#printExplanations(anchor_explainer, anchor_explanations)
-
-# TO-DO
-# library(Counterfactual)
-#counterfactual(Turnover~Age, df_xai, counterfactual_var=contrasts(df_xai$Turnover))
-# Not Understood yet!
+lime.explain[[1]]$plot()
+lime.explain[1]$results
